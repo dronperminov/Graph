@@ -105,4 +105,10 @@ int main() {
 
 		cout << endl;
 	}
+
+	/************************* Vertices degrees *************************/
+	cout << endl << "Degrees of vertices:" << endl;
+	for (int i = 0; i < 7; i++) {
+		cout << "deg of v" << i << ": " << graph.GetVertexDegree(i) << endl;
+	}
 }

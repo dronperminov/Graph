@@ -34,6 +34,8 @@ public:
 	void DFS(int u) const; // обход в глубину из вершины u
 	void BFS(int u) const; // обход в ширину из вершины u
 
+	int GetVertexDegree(int v) const; // получение степени вершины
+
 	bool IsConnected() const; // является ли граф связным
 	bool IsVertexReachable(int v, int u) const; // проверка достижимости вершины v из вершины u
 
@@ -246,6 +248,21 @@ void Graph::BFS(int u) const {
 			}
 		}
 	}
+}
+
+// получение степени вершины
+int Graph::GetVertexDegree(int v) const {
+	if (v < 0 || v >= vertices)
+		throw std::string("Graph::GetVertexDegree() - incorrect vertex");
+
+	int degree = 0;
+
+	for (int i = 0; i < vertices; i++) {
+		if (matrix[v][i] != 0)
+			degree++;
+	}
+
+	return degree;
 }
 
 // является ли граф связным
