@@ -111,4 +111,16 @@ int main() {
 	for (int i = 0; i < 7; i++) {
 		cout << "deg of v" << i << ": " << graph.GetVertexDegree(i) << endl;
 	}
+
+	/************************* Reachability matrix *************************/
+	vector<vector<bool>> matrix = graph.GetReachabilityMatrix();
+	cout << endl << "Reachability matrix: " << endl;
+
+	for (size_t i = 0; i < matrix.size(); i++) {
+		for (size_t j = 0; j < matrix[i].size(); j++)
+			cout << setw(3) << matrix[i][j] << " ";
+
+		cout << endl;
+	}
+
 }

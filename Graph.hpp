@@ -41,6 +41,7 @@ public:
 
 	std::vector<int> DijkstraAlgorithm(int u, int v) const; // поиск кратчайшего пути, алгоритм Дейкстры
 	std::vector<std::vector<int>> FloidYorshallAlgorithm() const; // алгоритм Флойда-Уоршала
+	std::vector<std::vector<bool>> GetReachabilityMatrix() const; // получение матрицы достижимости
 	std::vector<int> MST() const; // построение минимального остовного дерева, алгоритм Прима
 
 	~Graph(); // деструктор
@@ -257,10 +258,9 @@ int Graph::GetVertexDegree(int v) const {
 
 	int degree = 0;
 
-	for (int i = 0; i < vertices; i++) {
+	for (int i = 0; i < vertices; i++)
 		if (matrix[v][i] != 0)
 			degree++;
-	}
 
 	return degree;
 }
@@ -366,6 +366,22 @@ std::vector<std::vector<int>> Graph::FloidYorshallAlgorithm() const {
 	}
 
 	return W; // возвращаем матрицу
+}
+
+// получение матрицы достижимости
+std::vector<std::vector<bool>> Graph::GetReachabilityMatrix() const {
+	std::vector<std::vector<bool>> M(vertices, std::vector<bool>(vertices));
+
+	for (int i = 0; i < vertices; i++)
+		for (int j = 0; j < vertices; j++)
+			M[i][j] = matrix[i][j] != 0;
+
+	for (int k = 0; k < vertices; k++)
+		for (int i = 0; i < vertices; i++)
+			for (int j = 0; j < vertices; j++)
+				M[i][j] = M[i][j] || (M[i][k] && M[k][j]);
+
+	return M;
 }
 
 // построение минимального остовного дерева, алгоритм Прима
