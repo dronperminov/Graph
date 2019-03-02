@@ -23,6 +23,7 @@ class Graph {
 
 	void PrintDFS(int u, std::vector<bool> &visited) const; // рекурсивная функция вывода графа при обходе в глубину
 	int VisitedVerticesCount(int u, std::vector<bool> &visited) const; // количество посещённых вершин из вершины u
+	void GetArticulationPoints(int v, int p, std::vector<bool>& visited, std::vector<int>& tin, std::vector<int>& up, int& time, std::vector<int> &points) const; // поиск точек сочленения
 	void DFS(int u, std::vector<bool> &visited) const; // рекурсивная функция обхода графа в глубину 
 
 public:
@@ -50,6 +51,7 @@ public:
 	std::vector<std::vector<bool>> GetReachabilityMatrix() const; // получение матрицы достижимости
 	std::vector<int> PrimMST() const; // построение минимального остовного дерева, алгоритм Прима
 	std::vector<int> KruskalMST() const; // построение минимального остовного дерева, алгоритм Крускала
+	std::vector<int> GetArticulationPoints() const; // получение точек сочленения
 
 	~Graph(); // деструктор
 };
@@ -120,6 +122,45 @@ int Graph::VisitedVerticesCount(int u, std::vector<bool> &visited) const {
 	}
 
 	return visitedVertices; // возвращаем количество посещённых вершин
+}
+
+// поиск точек сочленения
+void Graph::GetArticulationPoints(int v, int p, std::vector<bool>& visited, std::vector<int>& tin, std::vector<int>& up, int& time, std::vector<int> &points) const {
+	time++;
+
+	up[v] = time;
+	tin[v] = time;
+
+	visited[v] = true;
+
+	int count = 0;
+
+	for (int u = 0; u < vertices; u++) {
+		if (matrix[v][u] == 0 || u == p)
+			continue;
+
+		if (visited[u]) {
+			if (tin[u] < up[v]) {
+				up[v] = tin[u];
+			}
+		}
+		else {
+			GetArticulationPoints(u, v, visited, tin, up, time, points);
+
+			count++;
+
+			if (up[u] < up[v])
+				up[v] = up[u];
+
+			if (p != -1 && up[u] >= tin[v]) {
+				points.push_back(v);
+			}
+		}
+	}
+
+	if (p == -1 && count >= 2) {
+		points.push_back(v);
+	}
 }
 
 // добавление ребра
@@ -396,7 +437,7 @@ std::vector<int> Graph::PrimMST() const {
 	if (isDirected)
 		throw std::string("Graph::PrimMST() - graph is directed");
 
-	std::vector<bool> used(vertices, false); // массив флагов посещения вершин
+	std::vector<bool> visited(vertices, false); // массив флагов посещения вершин
 	std::vector<int> min_edge(vertices, INF); // массив минимальных длин рёбер
 	std::vector<int> end_edge(vertices, -1); // массив концов вершин в остовном дереве
 	std::vector<int> tree;
@@ -408,10 +449,10 @@ std::vector<int> Graph::PrimMST() const {
 
 		// ищем вершину с минимальным весом, которая ещё не была посещена
 		for (int j = 0; j < vertices; j++)
-			if (!used[j] && (v == -1 || min_edge[j] < min_edge[v]))
+			if (!visited[j] && (v == -1 || min_edge[j] < min_edge[v]))
 				v = j;
 		
-		used[v] = true; // помечаем её как посещённую
+		visited[v] = true; // помечаем её как посещённую
 
 		if (end_edge[v] != -1) {
 			tree.push_back(v);
@@ -482,6 +523,25 @@ std::vector<int> Graph::KruskalMST() const {
 	}
 
 	return tree; // возвращаем дерево
+}
+
+// получение точек сочленения
+std::vector<int> Graph::GetArticulationPoints() const {
+	if (isDirected)
+		throw std::string("Graph::GetArticulationPoints() - graph is directed");
+
+	std::vector<bool> visited(vertices, false); // вектор флагов посещения вершин
+	std::vector<int> in(vertices); // время захода поиска в глубину
+	std::vector<int> up(vertices); // время выхода поиска в глубину
+	std::vector<int> points; // вектор точек сочленения
+
+	int time = 0; // время обхода в глубину
+
+	for (int i = 0; i < vertices; i++)
+		if (!visited[i])
+			GetArticulationPoints(i, -1, visited, in, up, time, points);
+
+	return points; // возвращаем вектор точек сочленения
 }
 
 // деструктор

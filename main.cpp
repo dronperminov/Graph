@@ -130,4 +130,12 @@ int main() {
 		cout << endl;
 	}
 
+	/************************* Articulation points *************************/
+	vector<int> points = graph.GetArticulationPoints();
+	cout << endl << "Articulation points:";
+
+	for (size_t i = 0; i < points.size(); i++)
+		cout << " " << points[i];
+
+	cout << endl;
 }
