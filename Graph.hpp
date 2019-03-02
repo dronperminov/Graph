@@ -331,62 +331,51 @@ bool Graph::IsVertexReachable(int v, int u) const {
 
 // поиск кратчайшего пути, алгоритм Дейкстры
 std::vector<int> Graph::DijkstraAlgorithm(int s, int p) const {
-	std::vector<bool> wasFound(vertices, false); // вектор флагов, была ли посещена конкретная точка
-	std::vector<int> distance(vertices, INF); // вектор расстояний от точки s до любой другой
+	std::vector<int> distance(vertices, INF); // вектор расстояний от вершини s до любой другой
+	std::vector<int> parents(vertices); // вектор предков всех вершин
+	std::vector<bool> used(vertices, false); // вектор флагов посещённости вершины
 
 	distance[s] = 0; // расстояние от s до s равно нулю
-	wasFound[s] = true; // стартовая вершина была посещена
-
-	int last = s; // последняя посещённая вершина - s
 
 	for (int i = 0; i < vertices; i++) {
+		int v = -1;
+
+		// ищем вершину с наименьшим расстоянием
+		for (int j = 0; j < vertices; j++)
+			if (!used[j] && (v == -1 || distance[j] < distance[v]))
+				v = j;
+		
+		// если расстояние бесконечно, значит пути быть не может
+		if (distance[v] == INF)
+			break; // выходим из цикла
+
+		used[v] = true; // помечаем вершину, как посещённую
+
+		// проходимся по всем смежным с v вершинам
 		for (int j = 0; j < vertices; j++) {
-			if (matrix[last][j] != 0 && !wasFound[j]) {
-				if (distance[j] > distance[last] + matrix[last][j])
-					distance[j] = distance[last] + matrix[last][j];
+			if (matrix[v][j] == 0)
+				continue;
+
+			if (distance[v] + matrix[v][j] < distance[j]) {
+				distance[j] = distance[v] + matrix[v][j];
+				parents[j] = v;
 			}
 		}
-
-		int minDist = INF; // считаем, что минимальное расстояние - бесконечность
-
-		for (int j = 0; j < vertices; j++) {
-			if (!wasFound[j] && minDist > distance[j]) {
-				minDist = distance[j];
-				last = j;
-			}
-		}
-
-		wasFound[last] = true; // отмечаем вершину как посещённую
 	}
 
 	std::vector<int> way; // вектор пути
 
 	// если полученноое расстояние равно бесконечности, значит пути нет
 	if (distance[p] == INF)
-		return way;
+		return way; // возвращаем пустой вектор
 
-	// восстанавливаем путь
-	int end = p; // конечная вершина
+	// восстанавливаем путь до вершины p
+	for (int v = p; v != s; v = parents[v])
+		way.push_back(v);
 
-	way.push_back(end);
-	int weight = distance[end];
+	way.push_back(s); // добавляем стартовую вершину
 
-	// пока не придём в начало
-	while (end != s) {
-		for (int i = 0; i < vertices; i++) { // просматриваем все вершины
-			if (matrix[i][end] != 0) {  // если связь есть
-				int tmp = weight - matrix[i][end]; // определяем вес пути из предыдущей вершины
-
-				if (tmp == distance[i]) { // если вес совпал с рассчитанным, значит из этой вершины и был переход
-					weight = tmp; // сохраняем новый вес
-					end = i;       // сохраняем предыдущую вершину
-					way.push_back(i); // и записываем ее в массив
-				}
-			}
-		}
-	}
-
-	return way;
+	return way; // возвращаем найденный путь
 }
 
 // алгоритм Флойда-Уоршала
