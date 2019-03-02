@@ -82,11 +82,18 @@ int main() {
 	}
 
 	/************************* MST *************************/
-	cout << endl << "MST: ";
-	vector<int> tree = graph.MST();
+	cout << endl << "MST (Prim algorithm): ";
+	vector<int> tree1 = graph.PrimMST();
 
-	for (size_t i = 0; i < tree.size(); i += 2)
-		cout << tree[i] << "-" << tree[i + 1] << " ";
+	for (size_t i = 0; i < tree1.size(); i += 2)
+		cout << tree1[i] << "-" << tree1[i + 1] << " ";
+	cout << endl;
+
+	cout << endl << "MST (Kruskal algorithm): ";
+	vector<int> tree2 = graph.KruskalMST();
+
+	for (size_t i = 0; i < tree2.size(); i += 2)
+		cout << tree2[i] << "-" << tree2[i + 1] << " ";
 	cout << endl;
 
 	/************************* Floid-Yorshall *************************/

@@ -10,6 +10,12 @@ const int INF = 10000000;
 
 // класс графа, внутреннее представление - матрица смежности
 class Graph {
+	// стрктура ребра
+	struct Edge {
+		int weight;
+		int v1;
+		int v2;
+	};
 
 	int vertices; // число вершин
 	bool isDirected; // ориентированный ли граф
@@ -42,7 +48,8 @@ public:
 	std::vector<int> DijkstraAlgorithm(int u, int v) const; // поиск кратчайшего пути, алгоритм Дейкстры
 	std::vector<std::vector<int>> FloidYorshallAlgorithm() const; // алгоритм Флойда-Уоршала
 	std::vector<std::vector<bool>> GetReachabilityMatrix() const; // получение матрицы достижимости
-	std::vector<int> MST() const; // построение минимального остовного дерева, алгоритм Прима
+	std::vector<int> PrimMST() const; // построение минимального остовного дерева, алгоритм Прима
+	std::vector<int> KruskalMST() const; // построение минимального остовного дерева, алгоритм Крускала
 
 	~Graph(); // деструктор
 };
@@ -385,7 +392,10 @@ std::vector<std::vector<bool>> Graph::GetReachabilityMatrix() const {
 }
 
 // построение минимального остовного дерева, алгоритм Прима
-std::vector<int> Graph::MST() const {
+std::vector<int> Graph::PrimMST() const {
+	if (isDirected)
+		throw std::string("Graph::PrimMST() - graph is directed");
+
 	std::vector<bool> used(vertices, false); // массив флагов посещения вершин
 	std::vector<int> min_edge(vertices, INF); // массив минимальных длин рёбер
 	std::vector<int> end_edge(vertices, -1); // массив концов вершин в остовном дереве
@@ -416,7 +426,62 @@ std::vector<int> Graph::MST() const {
 		}
 	}
 
-	return tree;
+	return tree; // возвращаем дерево
+}
+
+// построение минимального остовного дерева, алгоритм Крускала
+std::vector<int> Graph::KruskalMST() const {
+	if (isDirected)
+		throw std::string("Graph::KruskalMST() - graph is directed");
+
+	std::vector<Edge> edges; // вектор рёбер
+
+	// формируем вектор рёбер
+	for (int i = 0; i < vertices; i++)
+		for (int j = i; j < vertices; j++)
+			if (matrix[i][j] != 0)
+				edges.push_back({ matrix[i][j], i, j });
+
+	// сортируем рёбра по возрастанию весов
+	for (int k = edges.size() / 2; k > 0; k /= 2) {
+		for (size_t i = k; i < edges.size(); i++) {
+			int j = i;
+			Edge tmp = edges[i];
+
+			while (j >= k && tmp.weight < edges[j - k].weight) {
+				edges[j] = edges[j - k];
+				j -= k;
+			}
+
+			edges[j] = tmp;
+		}
+	}
+
+	std::vector<int> treeId(vertices);
+
+	for (int i = 0; i < vertices; i++)
+		treeId[i] = i;
+
+	std::vector<int> tree; // вектор для минимального остовного дерева
+
+	for (size_t i = 0; i < edges.size(); i++) {
+		int v1 = edges[i].v1;
+		int v2 = edges[i].v2;
+
+		if (treeId[v1] != treeId[v2]) {
+			tree.push_back(v1);
+			tree.push_back(v2);
+
+			int oldId = treeId[v2];
+			int newId = treeId[v1];
+
+			for (int j = 0; j < vertices; j++)
+				if (treeId[j] == oldId)
+					treeId[j] = newId;
+		}
+	}
+
+	return tree; // возвращаем дерево
 }
 
 // деструктор
